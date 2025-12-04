@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>Pablo Roesch Study Guide - VCF 9.0 Architect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Allow text selection in certain areas */
+        .question-text, .explanation, .key-learning, .feedback-content {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3561 0%, #1a1f3a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #28a745;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .exam-info {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3561;
+            margin-top: 5px;
+        }
+
+        .content {
+            display: flex;
+            min-height: 500px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #2d3561;
+            font-size: 16px;
+        }
+
+        .question-nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn.current {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .nav-btn.correct {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .nav-btn.incorrect {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .legend {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3561;
+        }
+
+        .question-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #2d3561;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .options {
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: flex-start;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 54px;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: #667eea;
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            margin-top: 3px;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #e7e9fc;
+        }
+
+        .option.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            border-width: 3px;
+        }
+
+        .option.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+            border-width: 3px;
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option.disabled label {
+            cursor: not-allowed;
+        }
+
+        .option.disabled input {
+            cursor: not-allowed;
+        }
+
+        .feedback-box {
+            display: none;
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 10px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .feedback-box.correct {
+            background: #d4edda;
+            border: 3px solid #28a745;
+        }
+
+        .feedback-box.incorrect {
+            background: #f8d7da;
+            border: 3px solid #dc3545;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .feedback-header.correct {
+            color: #155724;
+        }
+
+        .feedback-header.incorrect {
+            color: #721c24;
+        }
+
+        .feedback-icon {
+            font-size: 36px;
+            margin-right: 15px;
+        }
+
+        .feedback-content {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .correct-answer {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+
+        .explanation {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #2d3561;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .key-learning {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            border-radius: 5px;
+        }
+
+        .key-learning-title {
+            font-weight: bold;
+            color: #004085;
+            margin-bottom: 8px;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-next {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-finish {
+            background: #28a745;
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+
+        .start-screen, .summary-screen {
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .start-screen h2, .summary-screen h2 {
+            font-size: 36px;
+            color: #2d3561;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .instructions {
+            text-align: left;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 50px;
+            font-size: 20px;
+            margin-top: 30px;
+        }
+
+        .summary-screen {
+            display: none;
+        }
+
+        .summary-screen.active {
+            display: block;
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .score-display.pass {
+            color: #28a745;
+        }
+
+        .score-display.fail {
+            color: #dc3545;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2d3561;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-breakdown {
+            max-width: 800px;
+            margin: 40px auto;
+            text-align: left;
+        }
+
+        .section-result {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header p {
+                font-size: 12px;
+            }
+
+            .content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: none;
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+                padding: 15px;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .exam-info {
+                flex-direction: column;
+                padding: 15px 10px;
+            }
+
+            .info-item {
+                padding: 8px;
+                width: 100%;
+            }
+
+            .info-value {
+                font-size: 20px;
+            }
+
+            .question-nav {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 6px;
+            }
+
+            .nav-btn {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .question-text {
+                font-size: 16px;
+                padding: 15px;
+            }
+
+            .option {
+                padding: 12px 15px;
+                margin-bottom: 10px;
+            }
+
+            .option label {
+                font-size: 15px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .navigation-buttons {
+                flex-direction: column;
+            }
+
+            .btn-prev, .btn-next {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .start-screen, .summary-screen {
+                padding: 30px 20px;
+            }
+
+            .start-screen h2, .summary-screen h2 {
+                font-size: 28px;
+            }
+
+            .instructions {
+                padding: 15px;
+            }
+
+            .feedback-box {
+                padding: 15px;
+                margin: 20px 0;
+            }
+
+            .feedback-header {
+                font-size: 20px;
+            }
+
+            .feedback-icon {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .mode-badge {
+                font-size: 10px;
+                padding: 6px 12px;
+            }
+
+            .question-text {
+                font-size: 15px;
+            }
+
+            .option label {
+                font-size: 14px;
+            }
+
+            .question-nav {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .info-value {
+                font-size: 18px;
+            }
+
+            .info-label {
+                font-size: 10px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pablo Roesch Study Guide</h1>
+            <p>VMware Cloud Foundation 9.0 Architect | Exam Code: 2V0-13.25</p>
+            <div class="mode-badge">📚 STUDY MODE - Instant Feedback</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <h2>Study Mode</h2>
+            <p>Learn as you practice with immediate feedback on every question!</p>
+            
+            <div class="instructions">
+                <h3 style="color: #2d3561; margin-bottom: 15px;">How Study Mode Works:</h3>
+                <ul>
+                    <li>📝 <strong>60 questions</strong> covering all exam objectives</li>
+                    <li>✅ <strong>Immediate feedback</strong> after each answer</li>
+                    <li>📖 <strong>Detailed explanations</strong> for every question</li>
+                    <li>💡 <strong>Key learning points</strong> highlighted</li>
+                    <li>🎯 See correct/incorrect answers instantly</li>
+                    <li>📊 Track your progress as you go</li>
+                    <li>♻️ No time limit - learn at your own pace</li>
+                    <li>🔄 Navigate freely between all questions</li>
+                </ul>
+                <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+                    <strong>💡 Tip:</strong> Use this mode to learn and understand concepts. Once you're comfortable, switch to the timed exam mode for practice under real conditions.
+                </div>
+            </div>
+
+            <button class="btn btn-start" onclick="window.startExam(); return false;">Start Study Mode</button>
+        </div>
+
+        <!-- Exam Info Bar -->
+        <div class="exam-info hidden" id="examInfo">
+            <div class="info-item">
+                <div class="info-label">Current Question</div>
+                <div class="info-value" id="currentQ">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Answered</div>
+                <div class="info-value" id="answered">0/60</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Correct</div>
+                <div class="info-value" style="color: #28a745;" id="correct">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Incorrect</div>
+                <div class="info-value" style="color: #dc3545;" id="incorrect">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Progress Saved</div>
+                <div class="info-value" style="color: #28a745; font-size: 16px;" id="saveIndicator">✓</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content hidden" id="examContent">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h3>Question Navigator</h3>
+                <div class="question-nav" id="questionNav">
+                    <!-- Generated by JavaScript -->
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #667eea;"></div>
+                        <span>Current</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #28a745;"></div>
+                        <span>Correct</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #dc3545;"></div>
+                        <span>Incorrect</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: white; border: 2px solid #dee2e6;"></div>
+                        <span>Not Answered</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-finish" onclick="showSummary()" style="width: 100%; margin-top: 20px;">
+                    View Summary
+                </button>
+            </div>
+
+            <!-- Questions Area -->
+            <div class="main-content" id="questionsArea">
+                <!-- Generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Summary Screen -->
+        <div class="summary-screen" id="summaryScreen">
+            <h2>Study Session Complete!</h2>
+            <div class="score-display" id="scoreDisplay">--/60</div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #28a745;" id="summaryCorrect">0</div>
+                    <div class="stat-label">Correct Answers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #dc3545;" id="summaryIncorrect">0</div>
+                    <div class="stat-label">Incorrect Answers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #6c757d;" id="summaryUnanswered">0</div>
+                    <div class="stat-label">Not Answered</div>
+                </div>
+            </div>
+
+            <div class="section-breakdown" id="sectionBreakdown">
+                <!-- Generated by JavaScript -->
+            </div>
+
+            <button class="btn btn-next" onclick="location.reload()" style="margin-top: 30px;">
+                Start New Session
+            </button>
+            <button class="btn btn-prev" onclick="backToQuestions()" style="margin-top: 30px; margin-left: 10px;">
+                Continue Studying
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Make functions globally accessible for mobile onclick handlers
+        window.startExam = null;  // Will be defined later
+        window.resumeStudy = null;
+        window.startFresh = null;
+        
+        // LocalStorage keys
+        const STORAGE_KEY = 'vcf_study_mode_progress';
+        
+        // Exam data (same as before)
+        const examData = [
+            {
+                section: "Section 1",
+                question: "During a requirements workshop, a customer states: 'The solution must reduce our public cloud costs.' How should the architect classify this?",
+                options: ["Business Requirement", "Technical Requirement", "Assumption", "Constraint"],
+                correct: 0,
+                explanation: "Business requirements focus on outcomes and objectives (reducing costs), while technical requirements specify implementation details.",
+                keyLearning: "Business = WHAT/WHY, Technical = HOW"
+            },
+            {
+                section: "Section 1",
+                question: "An architect documents: 'It is assumed that network bandwidth between sites is sufficient for replication.' What is the associated risk?",
+                options: ["Replication may fail due to insufficient bandwidth", "Storage capacity may be inadequate", "Security policies may not be enforced", "Performance may not meet requirements"],
+                correct: 0,
+                explanation: "The assumption about sufficient bandwidth creates a risk that replication could fail if the assumption proves incorrect.",
+                keyLearning: "Risks are consequences of incorrect assumptions"
+            },
+            {
+                section: "Section 1",
+                question: "Which represents a CONSTRAINT rather than a requirement?",
+                options: ["Solution must support 500 users", "Solution must use existing datacenter space", "Solution must provide 99.9% uptime", "Solution must support automated provisioning"],
+                correct: 1,
+                explanation: "Constraints are limitations that restrict design options (must use existing space). Requirements define what solution must do.",
+                keyLearning: "Constraints limit options; requirements define needs"
+            },
+            {
+                section: "Section 1",
+                question: "A customer requires: 'All tier 1 services must be restored within 1 hour after a disaster.' This PRIMARILY impacts which AMPRS component?",
+                options: ["Availability", "Manageability", "Performance", "Recoverability"],
+                correct: 3,
+                explanation: "RTO (Recovery Time Objective) of 1 hour directly relates to Recoverability, not just Availability.",
+                keyLearning: "RTO/RPO = Recoverability component"
+            },
+            {
+                section: "Section 1",
+                question: "What BEST describes a Logical Design?",
+                options: ["Rack elevation diagrams with cabling", "Solution architecture without physical details", "High-level business objectives", "Specific hardware models and part numbers"],
+                correct: 1,
+                explanation: "Logical design shows solution architecture without physical implementation details.",
+                keyLearning: "Conceptual→Logical→Physical design progression"
+            },
+            {
+                section: "Section 1",
+                question: "When documenting a design decision, what should an architect include?",
+                options: ["Hardware vendor and model numbers", "Relationship to requirements and implications", "Cost breakdown and ROI", "Project timeline and resources"],
+                correct: 1,
+                explanation: "Design decisions must link to requirements and explain implications on the solution.",
+                keyLearning: "Always connect decisions to requirements"
+            },
+            {
+                section: "Section 1",
+                question: "Which AMPRS component is PRIMARILY addressed by implementing NSX Distributed Firewall with micro-segmentation?",
+                options: ["Availability", "Manageability", "Performance", "Security"],
+                correct: 3,
+                explanation: "Distributed Firewall with micro-segmentation primarily addresses Security through traffic isolation.",
+                keyLearning: "Micro-segmentation = Security component"
+            },
+            {
+                section: "Section 1",
+                question: "An architect documents the risk: 'Support staff may lack skills to operate VCF.' What is the BEST mitigation?",
+                options: ["Hire additional staff with required skills", "Complete skills assessment and allocate training budget", "Engage third-party to manage environment", "Simplify the design"],
+                correct: 1,
+                explanation: "Best practice: assess current skills, identify gaps, and plan/budget for training.",
+                keyLearning: "Risk mitigation: assess→plan→mitigate"
+            },
+            {
+                section: "Section 1",
+                question: "Which factor MOST influences availability design decisions?",
+                options: ["Organizational structure", "Service Level Agreement (SLA)", "Preferred hardware vendor", "Number of administrators"],
+                correct: 1,
+                explanation: "SLAs define required uptime and availability targets, directly driving design decisions.",
+                keyLearning: "SLAs drive availability requirements"
+            },
+            {
+                section: "Section 1",
+                question: "What differentiates a business requirement from a technical requirement?",
+                options: ["Length and detail of the statement", "Business requirements focus on outcomes, technical on implementation", "Business requirements cost less", "Technical requirements are always quantifiable"],
+                correct: 1,
+                explanation: "Business requirements describe desired outcomes; technical requirements describe specific implementations.",
+                keyLearning: "Outcome vs Implementation focus"
+            },
+            {
+                section: "Section 1",
+                question: "Which is an example of a Physical Design element?",
+                options: ["Workload domain separation strategy", "Specific ToR switch models and port configurations", "Conceptual multi-tier application architecture", "Logical network segmentation approach"],
+                correct: 1,
+                explanation: "Physical design includes specific hardware models, ports, and configurations.",
+                keyLearning: "Physical = specific hardware details"
+            },
+            {
+                section: "Section 1",
+                question: "What is the PRIMARY purpose of a design validation strategy?",
+                options: ["Ensure design meets budget", "Verify design satisfies requirements", "Obtain stakeholder approval", "Document implementation timeline"],
+                correct: 1,
+                explanation: "Design validation ensures the proposed design meets stated requirements.",
+                keyLearning: "Validation links design to requirements"
+            },
+            {
+                section: "Section 2",
+                question: "A company needs multiple business units with isolated infrastructure and independent lifecycle management. Which architecture is BEST?",
+                options: ["Single VCF instance, single workload domain shared", "Single VCF instance, dedicated workload domains per unit", "Multiple VCF instances, one per unit", "Single VCF instance, multiple clusters in one domain"],
+                correct: 1,
+                explanation: "Dedicated workload domains provide isolation and independent lifecycle per business unit while maintaining operational efficiency.",
+                keyLearning: "Workload domains = isolation + independence"
+            },
+            {
+                section: "Section 2",
+                question: "What is the PRIMARY purpose of the VCF Management Domain?",
+                options: ["Host production workloads", "Host VCF management components (SDDC Manager, vCenter)", "Provide network edge services", "Run development and test workloads"],
+                correct: 1,
+                explanation: "Management Domain hosts VCF platform components like SDDC Manager, vCenter, NSX Managers.",
+                keyLearning: "Management Domain = platform components"
+            },
+            {
+                section: "Section 2",
+                question: "Which VCF component provides automated lifecycle management of the entire stack?",
+                options: ["vCenter Server", "SDDC Manager", "NSX Manager", "Aria Suite Lifecycle"],
+                correct: 1,
+                explanation: "SDDC Manager orchestrates lifecycle management for all VCF components.",
+                keyLearning: "SDDC Manager = lifecycle orchestration"
+            },
+            {
+                section: "Section 2",
+                question: "What is a key benefit of VCF Workload Domains?",
+                options: ["Lower hardware costs", "Independent lifecycle and policy management per domain", "Faster network performance", "Reduced storage requirements"],
+                correct: 1,
+                explanation: "Workload domains enable independent updates, policies, and lifecycle per domain.",
+                keyLearning: "Domains = independent lifecycle"
+            },
+            {
+                section: "Section 2",
+                question: "Which component is responsible for stretched cluster witness functionality in VCF?",
+                options: ["vCenter Server", "vSAN Witness Appliance", "NSX Manager", "SDDC Manager"],
+                correct: 1,
+                explanation: "vSAN Witness Appliance provides quorum for stretched clusters.",
+                keyLearning: "Witness = stretched cluster quorum"
+            },
+            {
+                section: "Section 2",
+                question: "In VCF architecture, what role does NSX play?",
+                options: ["Storage management", "Network virtualization and security", "Compute resource scheduling", "Backup and recovery"],
+                correct: 1,
+                explanation: "NSX provides network virtualization, segmentation, and distributed security.",
+                keyLearning: "NSX = network virtualization + security"
+            },
+            {
+                section: "Section 2",
+                question: "Which Aria Suite component provides infrastructure monitoring and capacity planning?",
+                options: ["Aria Automation", "Aria Operations", "Aria Operations for Logs", "Aria Suite Lifecycle"],
+                correct: 1,
+                explanation: "Aria Operations provides monitoring, analytics, and capacity planning.",
+                keyLearning: "Aria Ops = monitoring + capacity"
+            },
+            {
+                section: "Section 2",
+                question: "What is the minimum number of hosts required for a VCF Management Domain?",
+                options: ["2", "3", "4", "5"],
+                correct: 2,
+                explanation: "VCF Management Domain requires minimum 4 hosts for proper redundancy.",
+                keyLearning: "Management Domain minimum = 4 hosts"
+            },
+            {
+                section: "Section 3",
+                question: "An architect designs a VCF solution with: 2 datacenters 15 miles apart, 3ms latency, Management domain RPO=0. Which design is BEST?",
+                options: ["Asynchronous replication", "Daily backups", "vSAN stretched cluster for management domain", "Separate VCF instances at each site"],
+                correct: 2,
+                explanation: "vSAN stretched cluster with sub-5ms latency provides RPO=0 for management domain.",
+                keyLearning: "Stretched cluster for RPO=0"
+            },
+            {
+                section: "Section 3",
+                question: "Which vSAN configuration tolerates loss of two storage devices?",
+                options: ["RAID-1 (Mirroring) FTT=1", "RAID-5 (Erasure Coding) FTT=1", "RAID-6 (Erasure Coding) FTT=2", "RAID-1 (Mirroring) FTT=0"],
+                correct: 2,
+                explanation: "RAID-6 with FTT=2 tolerates loss of two devices through dual parity.",
+                keyLearning: "RAID-6 FTT=2 = two device tolerance"
+            },
+            {
+                section: "Section 3",
+                question: "For a stretched cluster, what is the MAXIMUM latency between sites?",
+                options: ["1ms", "5ms", "10ms", "15ms"],
+                correct: 1,
+                explanation: "Stretched cluster maximum latency is 5ms RTT between sites.",
+                keyLearning: "Stretched cluster max = 5ms"
+            },
+            {
+                section: "Section 3",
+                question: "Which design BEST supports independent lifecycle management for tenants?",
+                options: ["Resource pools per tenant in single domain", "Dedicated workload domains per tenant", "Multiple clusters in single domain", "Multiple VCF instances"],
+                correct: 1,
+                explanation: "Dedicated workload domains per tenant enable truly independent lifecycle management.",
+                keyLearning: "Domain per tenant = independence"
+            },
+            {
+                section: "Section 3",
+                question: "A customer requires all VMs encrypted and keys managed externally. Which solution?",
+                options: ["vSphere Native Key Provider", "vSphere VM Encryption with external KMS", "vSAN Encryption only", "NSX encryption"],
+                correct: 1,
+                explanation: "VM Encryption with external KMS provides VM-level encryption with external key management.",
+                keyLearning: "VM Encryption + external KMS"
+            },
+            {
+                section: "Section 3",
+                question: "For network design, which topology provides BEST redundancy and scalability?",
+                options: ["Single ToR switch per rack", "Leaf-spine architecture", "Collapsed core", "Hierarchical three-tier"],
+                correct: 1,
+                explanation: "Leaf-spine provides non-blocking bandwidth, redundancy, and horizontal scalability.",
+                keyLearning: "Leaf-spine = modern datacenter standard"
+            },
+            {
+                section: "Section 3",
+                question: "When should an architect recommend NSX Federation?",
+                options: ["Single datacenter deployment", "Multi-site with unified management and mobility", "Small deployments under 10 hosts", "Only for stretched clusters"],
+                correct: 1,
+                explanation: "NSX Federation enables unified management and VM mobility across multiple sites.",
+                keyLearning: "Federation = multi-site management"
+            },
+            {
+                section: "Section 3",
+                question: "What is the PRIMARY purpose of Edge Transport Nodes in NSX?",
+                options: ["Host virtual machines", "Provide north-south routing and services", "Storage management", "DNS services"],
+                correct: 1,
+                explanation: "Edge Transport Nodes provide north-south routing, NAT, load balancing, and edge services.",
+                keyLearning: "Edge = north-south + services"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs RTO=4 hours, RPO=1 hour for workloads. Which solution?",
+                options: ["vSphere HA only", "vSAN stretched cluster", "Veeam with hourly backups", "vSphere Replication with SRM"],
+                correct: 3,
+                explanation: "vSphere Replication with SRM provides RPO=15min-24hr and orchestrated failover for stated RTO.",
+                keyLearning: "Replication + SRM for RTO/RPO"
+            },
+            {
+                section: "Section 3",
+                question: "For capacity planning, which tool provides rightsize recommendations?",
+                options: ["vCenter Server", "Aria Operations", "NSX Manager", "SDDC Manager"],
+                correct: 1,
+                explanation: "Aria Operations provides rightsizing recommendations based on actual utilization.",
+                keyLearning: "Aria Ops = rightsizing analytics"
+            },
+            {
+                section: "Section 3",
+                question: "Which design decision BEST supports scalability for compute resources?",
+                options: ["Fixed cluster size, add clusters as needed", "Scale clusters to maximum hosts", "Single large cluster for all workloads", "Avoid workload domains"],
+                correct: 0,
+                explanation: "Start with appropriately-sized clusters and add new clusters as capacity grows.",
+                keyLearning: "Horizontal scaling = add clusters"
+            },
+            {
+                section: "Section 3",
+                question: "A company requires micro-segmentation for east-west traffic. Which NSX feature?",
+                options: ["Gateway Firewall", "Distributed Firewall", "Edge Firewall", "Load Balancer"],
+                correct: 1,
+                explanation: "NSX Distributed Firewall provides micro-segmentation for east-west traffic.",
+                keyLearning: "DFW = east-west micro-segmentation"
+            },
+            {
+                section: "Section 3",
+                question: "For workload migration into VCF, which tool provides LEAST downtime?",
+                options: ["Cold migration", "Storage vMotion", "HCX with vMotion", "Backup and restore"],
+                correct: 2,
+                explanation: "HCX with vMotion provides live migration with zero downtime.",
+                keyLearning: "HCX vMotion = zero downtime"
+            },
+            {
+                section: "Section 3",
+                question: "Which vSphere Supervisor deployment model uses ESXi as Kubernetes control plane?",
+                options: ["vSphere Pods", "Tanzu Kubernetes Grid", "vSphere with Tanzu", "Native Kubernetes"],
+                correct: 0,
+                explanation: "vSphere Pods use ESXi as Kubernetes control plane (Spherelet).",
+                keyLearning: "vSphere Pods = ESXi as K8s CP"
+            },
+            {
+                section: "Section 3",
+                question: "For tenant isolation in VCF Automation, which provides STRONGEST separation?",
+                options: ["Projects within single organization", "Separate organizations", "Resource quotas", "RBAC policies"],
+                correct: 1,
+                explanation: "Separate organizations provide strongest tenant isolation in Aria Automation.",
+                keyLearning: "Separate orgs = strongest isolation"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs automated infrastructure provisioning with governance. Which tool?",
+                options: ["vCenter Server only", "Aria Automation with policies", "PowerCLI scripts", "SDDC Manager"],
+                correct: 1,
+                explanation: "Aria Automation provides IaC with approval policies and governance.",
+                keyLearning: "Aria Automation = IaC + governance"
+            },
+            {
+                section: "Section 3",
+                question: "For monitoring VCF management components, which provides BEST visibility?",
+                options: ["vCenter alarms", "Aria Operations with Management Pack", "SDDC Manager dashboard", "ESXi syslog"],
+                correct: 1,
+                explanation: "Aria Operations with VCF Management Pack provides deep visibility into platform health.",
+                keyLearning: "Aria Ops + MP = best visibility"
+            },
+            {
+                section: "Section 3",
+                question: "Which storage policy provides BEST performance for latency-sensitive workloads on vSAN?",
+                options: ["RAID-1 with cache reservation", "RAID-5 standard", "RAID-6 with deduplication", "RAID-1 with compression"],
+                correct: 0,
+                explanation: "RAID-1 with cache reservation provides lowest latency for performance-sensitive workloads.",
+                keyLearning: "RAID-1 + cache = best performance"
+            },
+            {
+                section: "Section 3",
+                question: "A customer requires physical NIC redundancy. Which design consideration?",
+                options: ["Use only 10GbE NICs", "Each NIC team must include NICs from different physical cards", "Embedded NICs only", "All NICs from same card"],
+                correct: 1,
+                explanation: "NIC teams should span different physical cards to avoid single card failure.",
+                keyLearning: "NIC team = different physical cards"
+            },
+            {
+                section: "Section 3",
+                question: "For BGP routing with NSX Edges, which design provides BEST redundancy?",
+                options: ["Single Edge node", "Two Edge nodes, active-passive", "Two Edge nodes, active-active with ECMP", "Four Edge nodes"],
+                correct: 2,
+                explanation: "Active-active Edge nodes with ECMP provide redundancy and load distribution.",
+                keyLearning: "Active-active ECMP = redundancy"
+            },
+            {
+                section: "Section 3",
+                question: "Which pre-requisite is REQUIRED before deploying VCF?",
+                options: ["Active Directory", "DNS and NTP infrastructure", "External storage array", "Public IP addresses"],
+                correct: 1,
+                explanation: "DNS and NTP are mandatory prerequisites for VCF deployment.",
+                keyLearning: "DNS + NTP = mandatory prerequisites"
+            },
+            {
+                section: "Section 3",
+                question: "For VCF Fleet topology, when should multiple instances be used?",
+                options: ["Never, use workload domains", "Geographic separation or regulatory compliance", "More than 10 hosts", "Cost savings"],
+                correct: 1,
+                explanation: "Multiple VCF instances are used for geographic separation or compliance requirements.",
+                keyLearning: "Multiple instances = geo/compliance"
+            },
+            {
+                section: "Section 3",
+                question: "Which network design separates management, vMotion, vSAN, and VM traffic?",
+                options: ["Single flat network", "VLANs with multiple port groups", "Physical network separation only", "No separation needed"],
+                correct: 1,
+                explanation: "VLANs with dedicated port groups separate traffic types for security and performance.",
+                keyLearning: "VLANs = traffic separation"
+            },
+            {
+                section: "Section 3",
+                question: "For vSAN capacity planning, what is the MINIMUM disk group configuration?",
+                options: ["1 cache, 1 capacity", "1 cache, 2 capacity", "2 cache, 2 capacity", "1 cache, 3 capacity"],
+                correct: 0,
+                explanation: "Minimum vSAN disk group: 1 cache device, 1 capacity device.",
+                keyLearning: "Minimum disk group = 1+1"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs application-level disaster recovery orchestration. Which tool?",
+                options: ["vSphere HA", "vSAN stretched cluster", "Site Recovery Manager (SRM)", "Aria Operations"],
+                correct: 2,
+                explanation: "SRM provides application-aware DR orchestration and automated failover.",
+                keyLearning: "SRM = DR orchestration"
+            },
+            {
+                section: "Section 3",
+                question: "For NSX logical routing, which provides default gateway for VMs?",
+                options: ["Tier-0 Gateway", "Tier-1 Gateway", "Edge Transport Node", "Physical router"],
+                correct: 1,
+                explanation: "Tier-1 Gateway provides default gateway and routing for VM segments.",
+                keyLearning: "T1 Gateway = VM default gateway"
+            },
+            {
+                section: "Section 3",
+                question: "Which Aria Automation resource type provides self-service VM deployment?",
+                options: ["Cloud Template", "Content Library", "Host Profile", "VM Template"],
+                correct: 0,
+                explanation: "Cloud Templates define infrastructure as code for self-service deployment.",
+                keyLearning: "Cloud Template = IaC for VMs"
+            },
+            {
+                section: "Section 3",
+                question: "For identity management in VCF, which provides centralized authentication?",
+                options: ["Local accounts only", "Active Directory with Identity Manager", "NSX user database", "vCenter SSO"],
+                correct: 1,
+                explanation: "Active Directory with Workspace ONE Access (Identity Manager) provides centralized identity.",
+                keyLearning: "AD + Identity Manager = central auth"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs predictive analytics for capacity. Which Aria Operations feature?",
+                options: ["Real-time monitoring", "What-if scenarios", "Log aggregation", "Configuration management"],
+                correct: 1,
+                explanation: "What-if scenarios in Aria Operations provide predictive capacity analytics.",
+                keyLearning: "What-if = predictive capacity"
+            },
+            {
+                section: "Section 3",
+                question: "For availability within a single site, which provides automatic VM restart?",
+                options: ["DRS", "vSphere HA", "vMotion", "Storage DRS"],
+                correct: 1,
+                explanation: "vSphere HA automatically restarts VMs on surviving hosts after failure.",
+                keyLearning: "HA = automatic VM restart"
+            },
+            {
+                section: "Section 3",
+                question: "Which design supports non-disruptive workload domain expansion?",
+                options: ["Fixed-size clusters", "Elastic clusters with host commission/decommission", "Manual cluster rebuild", "New VCF instance"],
+                correct: 1,
+                explanation: "Elastic clusters with commission/decommission enable non-disruptive scaling.",
+                keyLearning: "Elastic clusters = non-disruptive scale"
+            },
+            {
+                section: "Section 3",
+                question: "For certificate management in VCF, which component is PRIMARY?",
+                options: ["vCenter Certificate Manager", "SDDC Manager", "NSX Certificate Store", "Aria Suite Lifecycle"],
+                correct: 1,
+                explanation: "SDDC Manager is the central certificate management component for VCF.",
+                keyLearning: "SDDC Manager = cert management"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs to enforce security policies before VM deployment. Which feature?",
+                options: ["NSX Distributed Firewall rules", "Aria Automation approval policies", "vCenter permissions", "Anti-affinity rules"],
+                correct: 1,
+                explanation: "Aria Automation approval policies enforce governance before deployment.",
+                keyLearning: "Approval policies = pre-deployment governance"
+            },
+            {
+                section: "Section 3",
+                question: "For NSX overlay networking, which protocol is used?",
+                options: ["VXLAN", "Geneve", "GRE", "MPLS"],
+                correct: 1,
+                explanation: "NSX uses Geneve protocol for overlay networking.",
+                keyLearning: "NSX overlay = Geneve protocol"
+            },
+            {
+                section: "Section 3",
+                question: "Which provides application discovery and mapping in VCF?",
+                options: ["vCenter Network Topology", "Aria Operations for Networks", "NSX Manager", "SDDC Manager"],
+                correct: 1,
+                explanation: "Aria Operations for Networks provides application discovery and dependency mapping.",
+                keyLearning: "Aria Ops Networks = app discovery"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs immutable backup for ransomware protection. Which approach?",
+                options: ["Snapshots only", "Backup to air-gapped repository", "vSAN replication", "vSphere HA"],
+                correct: 1,
+                explanation: "Air-gapped repository provides immutable backup protection against ransomware.",
+                keyLearning: "Air-gapped = immutable protection"
+            },
+            {
+                section: "Section 3",
+                question: "For Kubernetes workloads in VCF, which provides best pod networking?",
+                options: ["NSX Container Plugin (NCP)", "Flannel", "Calico without NSX", "Bridge networking"],
+                correct: 0,
+                explanation: "NSX Container Plugin provides native NSX integration for pod networking.",
+                keyLearning: "NCP = NSX + Kubernetes integration"
+            },
+            {
+                section: "Section 3",
+                question: "Which metric BEST indicates need for additional compute capacity?",
+                options: ["Average CPU 30%", "Peak CPU 95% with contention", "Memory 50% used", "Storage 40% used"],
+                correct: 1,
+                explanation: "Peak CPU 95% with contention indicates insufficient capacity for workload demands.",
+                keyLearning: "95% peak + contention = add capacity"
+            },
+            {
+                section: "Section 3",
+                question: "For multi-tenancy, which VCF Automation feature provides cost visibility?",
+                options: ["Projects", "Cloud Zones", "Resource quotas", "Pricing cards with showback"],
+                correct: 3,
+                explanation: "Pricing cards with showback provide cost visibility per tenant/project.",
+                keyLearning: "Pricing cards = cost visibility"
+            },
+            {
+                section: "Section 3",
+                question: "A customer needs to validate VCF deployment before production. Which approach?",
+                options: ["Deploy directly to production", "Test with single host", "Pilot deployment with validation checklist", "Skip validation phase"],
+                correct: 2,
+                explanation: "Pilot deployment with validation checklist ensures readiness before production.",
+                keyLearning: "Pilot + validation = production readiness"
+            }
+        ];
+
+        // State
+        let currentQuestion = 0;
+        let answers = new Array(60).fill(null);
+        let results = new Array(60).fill(null); // true = correct, false = incorrect
+
+        // Load saved progress on page load
+        function loadProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    currentQuestion = data.currentQuestion || 0;
+                    answers = data.answers || new Array(60).fill(null);
+                    results = data.results || new Array(60).fill(null);
+                    return true;
+                } catch (e) {
+                    console.error('Error loading progress:', e);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        // Save progress to localStorage
+        function saveProgress() {
+            const data = {
+                currentQuestion: currentQuestion,
+                answers: answers,
+                results: results,
+                lastSaved: new Date().toISOString()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            
+            // Show save indicator
+            const indicator = document.getElementById('saveIndicator');
+            if (indicator) {
+                indicator.textContent = '💾';
+                indicator.style.color = '#667eea';
+                setTimeout(() => {
+                    indicator.textContent = '✓';
+                    indicator.style.color = '#28a745';
+                }, 500);
+            }
+        }
+
+        // Clear saved progress
+        function clearProgress() {
+            localStorage.removeItem(STORAGE_KEY);
+            currentQuestion = 0;
+            answers = new Array(60).fill(null);
+            results = new Array(60).fill(null);
+        }
+
+        // Check for saved progress on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('=== Pablo Roesch Study Guide - Page Loaded ===');
+            
+            // ALWAYS setup event listeners first (critical for mobile)
+            setupEventListeners();
+            
+            // Then check for saved progress
+            try {
+                if (loadProgress()) {
+                    console.log('Found saved progress');
+                    showResumePrompt();
+                } else {
+                    console.log('No saved progress found');
+                }
+            } catch (error) {
+                console.error('Error loading progress:', error);
+                // Continue anyway - don't block the app
+            }
+        });
+
+        // Setup all event listeners (mobile-friendly)
+        function setupEventListeners() {
+            console.log('Setting up event listeners...');
+            
+            // Start button
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Start button clicked!');
+                    startExam();
+                });
+                startBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    console.log('Start button touched!');
+                    startExam();
+                }, {passive: false});
+                console.log('Start button listeners added');
+            } else {
+                console.error('Start button not found!');
+            }
+        }
+
+        // Show resume prompt if there's saved progress
+        function showResumePrompt() {
+            const startScreen = document.getElementById('startScreen');
+            if (!startScreen) {
+                console.error('Start screen not found!');
+                return;
+            }
+                    
+                    const resumeDiv = document.createElement('div');
+                    resumeDiv.style.cssText = 'margin-top: 30px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px;';
+                    
+                    const answeredCount = answers.filter(a => a !== null).length;
+                    const correctCount = results.filter(r => r === true).length;
+                    
+                    resumeDiv.innerHTML = `
+                        <h3 style="color: #856404; margin-bottom: 15px;">📌 Previous Session Found!</h3>
+                        <p style="color: #856404; margin-bottom: 15px;">
+                            You were at <strong>Question ${currentQuestion + 1}</strong><br>
+                            Progress: <strong>${answeredCount}/60</strong> answered 
+                            (<strong>${correctCount}</strong> correct)
+                        </p>
+                        <button class="btn btn-next" onclick="window.resumeStudy(); return false;" style="margin-right: 10px;">
+                            ▶️ Resume Where I Left Off
+                        </button>
+                        <button class="btn btn-prev" onclick="window.startFresh(); return false;">
+                            🔄 Start Fresh
+                        </button>
+                    `;
+                    
+                    startScreen.appendChild(resumeDiv);
+                    
+                    // Hide the default start button
+                    const defaultStartBtn = startScreen.querySelector('.btn-start');
+                    if (defaultStartBtn) {
+                        defaultStartBtn.style.display = 'none';
+                    }
+        }
+
+        // Resume from saved progress - Make globally accessible
+        window.resumeStudy = function resumeStudy() {
+            console.log('Resume Study clicked');
+            startExam();
+        }
+
+        // Start fresh (clear progress) - Make globally accessible
+        window.startFresh = function startFresh() {
+            if (confirm('This will clear your saved progress. Are you sure?')) {
+                clearProgress();
+                location.reload();
+            }
+        }
+
+        // Initialize - Make globally accessible for onclick
+        window.startExam = function startExam() {
+            try {
+                console.log('===START EXAM CALLED===');
+                alert('Starting exam...'); // Debug alert
+                
+                const startScreen = document.getElementById('startScreen');
+                const examInfo = document.getElementById('examInfo');
+                const examContent = document.getElementById('examContent');
+                
+                if (!startScreen || !examInfo || !examContent) {
+                    console.error('Required elements not found!');
+                    alert('Error: Page elements not loaded. Please refresh the page.');
+                    return;
+                }
+                
+                console.log('Hiding start screen...');
+                startScreen.classList.add('hidden');
+                examInfo.classList.remove('hidden');
+                examContent.classList.remove('hidden');
+                
+                console.log('Generating navigation...');
+                generateQuestionNav();
+                
+                console.log('Generating questions...');
+                generateQuestions();
+                
+                // Restore previous answers and feedback if resuming
+                console.log('Checking for saved progress...');
+                if (loadProgress()) {
+                    console.log('Restoring previous state...');
+                    restorePreviousState();
+                }
+                
+                console.log('Showing first question...');
+                showQuestion(currentQuestion);
+                
+                console.log('Exam started successfully!');
+            } catch (error) {
+                console.error('Error in startExam():', error);
+                alert('Error starting exam: ' + error.message + '\n\nPlease refresh the page and try again.');
+            }
+        }
+
+        // Restore previous state when resuming
+        function restorePreviousState() {
+            examData.forEach((q, index) => {
+                if (answers[index] !== null) {
+                    const selectedOption = answers[index];
+                    const isCorrect = results[index];
+                    
+                    // Restore option states
+                    const options = document.querySelectorAll(`#question-${index} .option`);
+                    options.forEach((opt, i) => {
+                        opt.classList.add('disabled');
+                        const radio = opt.querySelector('input');
+                        radio.disabled = true;
+                        
+                        if (i === selectedOption) {
+                            opt.classList.add('selected');
+                            opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+                            radio.checked = true;
+                        }
+                        
+                        if (i === q.correct) {
+                            opt.classList.add('correct');
+                        }
+                    });
+                    
+                    // Restore feedback box
+                    const feedbackBox = document.getElementById(`feedback-${index}`);
+                    const feedbackHeader = document.getElementById(`feedback-header-${index}`);
+                    const feedbackIcon = document.getElementById(`feedback-icon-${index}`);
+                    const feedbackTitle = document.getElementById(`feedback-title-${index}`);
+                    const correctAnswerDiv = document.getElementById(`correct-answer-${index}`);
+                    
+                    feedbackBox.classList.add('show');
+                    feedbackBox.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    feedbackHeader.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    
+                    if (isCorrect) {
+                        feedbackIcon.textContent = '✅';
+                        feedbackTitle.textContent = 'Correct!';
+                        correctAnswerDiv.innerHTML = `<strong style="color: #155724;">Your answer is correct: ${String.fromCharCode(65 + selectedOption)}. ${q.options[selectedOption]}</strong>`;
+                    } else {
+                        feedbackIcon.textContent = '❌';
+                        feedbackTitle.textContent = 'Incorrect';
+                        correctAnswerDiv.innerHTML = `
+                            <div style="margin-bottom: 10px;"><strong style="color: #721c24;">Your answer: ${String.fromCharCode(65 + selectedOption)}. ${q.options[selectedOption]}</strong></div>
+                            <div><strong style="color: #155724;">Correct answer: ${String.fromCharCode(65 + q.correct)}. ${q.options[q.correct]}</strong></div>
+                        `;
+                    }
+                }
+            });
+        }
+
+        function generateQuestionNav() {
+            const nav = document.getElementById('questionNav');
+            for (let i = 0; i < 60; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'nav-btn';
+                btn.textContent = i + 1;
+                btn.dataset.questionIndex = i;
+                nav.appendChild(btn);
+            }
+        }
+
+        function generateQuestions() {
+            const area = document.getElementById('questionsArea');
+            examData.forEach((q, index) => {
+                const container = document.createElement('div');
+                container.className = 'question-container';
+                container.id = `question-${index}`;
+                
+                let optionsHTML = '';
+                q.options.forEach((opt, i) => {
+                    optionsHTML += `
+                        <div class="option" data-question="${index}" data-option="${i}" id="option-${index}-${i}">
+                            <input type="radio" name="q${index}" id="q${index}_${i}" value="${i}">
+                            <label for="q${index}_${i}">${String.fromCharCode(65 + i)}. ${opt}</label>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <span class="section-badge">${q.section}</span>
+                    <div class="question-header">
+                        <div class="question-number">Question ${index + 1} of 60</div>
+                    </div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options" id="options-${index}">${optionsHTML}</div>
+                    
+                    <div class="feedback-box" id="feedback-${index}">
+                        <div class="feedback-header" id="feedback-header-${index}">
+                            <span class="feedback-icon" id="feedback-icon-${index}"></span>
+                            <span id="feedback-title-${index}"></span>
+                        </div>
+                        <div class="feedback-content">
+                            <div class="correct-answer" id="correct-answer-${index}"></div>
+                            <div class="explanation">
+                                <div class="explanation-title">📖 Explanation:</div>
+                                <p>${q.explanation}</p>
+                            </div>
+                            <div class="key-learning">
+                                <div class="key-learning-title">💡 Key Learning Point:</div>
+                                <p>${q.keyLearning}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button class="btn btn-prev" data-action="prev" ${index === 0 ? 'disabled' : ''}>
+                            ← Previous
+                        </button>
+                        ${index === 59 ? 
+                            '<button class="btn btn-finish" data-action="summary">View Summary</button>' :
+                            '<button class="btn btn-next" data-action="next">Next →</button>'
+                        }
+                    </div>
+                `;
+                area.appendChild(container);
+            });
+            
+            // Set up event delegation for options and buttons
+            setupEventDelegation();
+            setupEventDelegation();
+        }
+
+        // Setup event delegation for better mobile performance
+        function setupEventDelegation() {
+            const questionsArea = document.getElementById('questionsArea');
+            if (!questionsArea) return;
+            
+            // Handle option clicks with event delegation
+            questionsArea.addEventListener('click', function(e) {
+                const option = e.target.closest('.option');
+                if (option && !option.classList.contains('disabled')) {
+                    const questionIndex = parseInt(option.dataset.question);
+                    const optionIndex = parseInt(option.dataset.option);
+                    if (!isNaN(questionIndex) && !isNaN(optionIndex)) {
+                        selectOption(questionIndex, optionIndex);
+                    }
+                }
+                
+                // Handle navigation button clicks
+                const button = e.target.closest('[data-action]');
+                if (button && !button.disabled) {
+                    const action = button.dataset.action;
+                    e.preventDefault();
+                    
+                    switch(action) {
+                        case 'prev':
+                            previousQuestion();
+                            break;
+                        case 'next':
+                            nextQuestion();
+                            break;
+                        case 'summary':
+                            showSummary();
+                            break;
+                    }
+                }
+            });
+            
+            // Also handle touch events for better mobile responsiveness
+            questionsArea.addEventListener('touchend', function(e) {
+                // Prevent double-firing on mobile
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+                
+                const option = e.target.closest('.option');
+                if (option && !option.classList.contains('disabled')) {
+                    const questionIndex = parseInt(option.dataset.question);
+                    const optionIndex = parseInt(option.dataset.option);
+                    if (!isNaN(questionIndex) && !isNaN(optionIndex)) {
+                        selectOption(questionIndex, optionIndex);
+                    }
+                }
+            }, { passive: false });
+            
+            // Handle question navigation
+            const questionNav = document.getElementById('questionNav');
+            if (questionNav) {
+                questionNav.addEventListener('click', function(e) {
+                    const btn = e.target.closest('.nav-btn');
+                    if (btn && btn.dataset.questionIndex) {
+                        const index = parseInt(btn.dataset.questionIndex);
+                        if (!isNaN(index)) {
+                            showQuestion(index);
+                        }
+                    }
+                });
+            }
+        }
+
+        function showQuestion(index) {
+            // Save current position
+            currentQuestion = index;
+            saveProgress();
+            
+            // Hide all questions
+            document.querySelectorAll('.question-container').forEach(q => {
+                q.classList.remove('active');
+            });
+            
+            // Show current question
+            document.getElementById(`question-${index}`).classList.add('active');
+            currentQuestion = index;
+            
+            // Update navigation
+            updateNav();
+            updateInfo();
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            const q = examData[questionIndex];
+            const isCorrect = optionIndex === q.correct;
+            
+            // Store answer and result
+            answers[questionIndex] = optionIndex;
+            results[questionIndex] = isCorrect;
+            
+            // Save progress to localStorage
+            saveProgress();
+            
+            // Disable all options
+            const options = document.querySelectorAll(`#question-${questionIndex} .option`);
+            options.forEach((opt, i) => {
+                opt.classList.add('disabled');
+                const radio = opt.querySelector('input');
+                radio.disabled = true;
+                
+                // Highlight selected
+                if (i === optionIndex) {
+                    opt.classList.add('selected');
+                    opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                
+                // Always show correct answer
+                if (i === q.correct) {
+                    opt.classList.add('correct');
+                }
+            });
+            
+            // Show feedback
+            const feedbackBox = document.getElementById(`feedback-${questionIndex}`);
+            const feedbackHeader = document.getElementById(`feedback-header-${questionIndex}`);
+            const feedbackIcon = document.getElementById(`feedback-icon-${questionIndex}`);
+            const feedbackTitle = document.getElementById(`feedback-title-${questionIndex}`);
+            const correctAnswerDiv = document.getElementById(`correct-answer-${questionIndex}`);
+            
+            feedbackBox.classList.add('show');
+            feedbackBox.classList.add(isCorrect ? 'correct' : 'incorrect');
+            feedbackHeader.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            if (isCorrect) {
+                feedbackIcon.textContent = '✅';
+                feedbackTitle.textContent = 'Correct!';
+                correctAnswerDiv.innerHTML = `<strong style="color: #155724;">Your answer is correct: ${String.fromCharCode(65 + optionIndex)}. ${q.options[optionIndex]}</strong>`;
+            } else {
+                feedbackIcon.textContent = '❌';
+                feedbackTitle.textContent = 'Incorrect';
+                correctAnswerDiv.innerHTML = `
+                    <div style="margin-bottom: 10px;"><strong style="color: #721c24;">Your answer: ${String.fromCharCode(65 + optionIndex)}. ${q.options[optionIndex]}</strong></div>
+                    <div><strong style="color: #155724;">Correct answer: ${String.fromCharCode(65 + q.correct)}. ${q.options[q.correct]}</strong></div>
+                `;
+            }
+            
+            updateNav();
+            updateInfo();
+        }
+
+        function updateNav() {
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach((btn, i) => {
+                btn.classList.remove('current', 'correct', 'incorrect');
+                
+                if (i === currentQuestion) {
+                    btn.classList.add('current');
+                } else if (results[i] === true) {
+                    btn.classList.add('correct');
+                } else if (results[i] === false) {
+                    btn.classList.add('incorrect');
+                }
+            });
+        }
+
+        function updateInfo() {
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            
+            const answeredCount = answers.filter(a => a !== null).length;
+            document.getElementById('answered').textContent = `${answeredCount}/60`;
+            
+            const correctCount = results.filter(r => r === true).length;
+            document.getElementById('correct').textContent = correctCount;
+            
+            const incorrectCount = results.filter(r => r === false).length;
+            document.getElementById('incorrect').textContent = incorrectCount;
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                showQuestion(currentQuestion - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < 59) {
+                showQuestion(currentQuestion + 1);
+            }
+        }
+
+        function showSummary() {
+            // Calculate stats
+            const correctCount = results.filter(r => r === true).length;
+            const incorrectCount = results.filter(r => r === false).length;
+            const unansweredCount = results.filter(r => r === null).length;
+            const percentage = answeredCount > 0 ? (correctCount / (correctCount + incorrectCount) * 100).toFixed(1) : 0;
+            const passed = correctCount >= 42;
+            
+            // Section breakdown
+            const sectionScores = {
+                'Section 1': { correct: 0, total: 0 },
+                'Section 2': { correct: 0, total: 0 },
+                'Section 3': { correct: 0, total: 0 }
+            };
+            
+            examData.forEach((q, i) => {
+                sectionScores[q.section].total++;
+                if (results[i] === true) {
+                    sectionScores[q.section].correct++;
+                }
+            });
+            
+            // Update summary display
+            const answeredCount = correctCount + incorrectCount;
+            document.getElementById('scoreDisplay').textContent = `${correctCount}/${answeredCount} (${percentage}%)`;
+            document.getElementById('scoreDisplay').className = `score-display ${passed ? 'pass' : 'fail'}`;
+            
+            document.getElementById('summaryCorrect').textContent = correctCount;
+            document.getElementById('summaryIncorrect').textContent = incorrectCount;
+            document.getElementById('summaryUnanswered').textContent = unansweredCount;
+            
+            // Section breakdown
+            const breakdownHTML = Object.entries(sectionScores).map(([section, score]) => {
+                const pct = score.total > 0 ? (score.correct / score.total * 100).toFixed(1) : 0;
+                const color = pct >= 70 ? '#28a745' : pct >= 60 ? '#ffc107' : '#dc3545';
+                
+                return `
+                    <div class="section-result">
+                        <h4>${section}: ${score.correct}/${score.total} (${pct}%)</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${pct}%; background: ${color};">
+                                ${score.correct}/${score.total}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('sectionBreakdown').innerHTML = `
+                <h3 style="color: #2d3561; margin-bottom: 20px;">Performance by Section</h3>
+                ${breakdownHTML}
+            `;
+            
+            // Show summary screen
+            document.getElementById('examInfo').classList.add('hidden');
+            document.getElementById('examContent').classList.add('hidden');
+            document.getElementById('summaryScreen').classList.add('active');
+            
+            // Add clear progress option to summary
+            const summaryScreen = document.getElementById('summaryScreen');
+            if (!document.getElementById('clearProgressBtn')) {
+                const clearBtn = document.createElement('button');
+                clearBtn.id = 'clearProgressBtn';
+                clearBtn.className = 'btn';
+                clearBtn.style.cssText = 'background: #dc3545; color: white; margin-top: 30px; margin-left: 10px;';
+                clearBtn.textContent = '🗑️ Clear Progress & Start Fresh';
+                clearBtn.onclick = function() {
+                    if (confirm('This will clear all your saved progress. Are you sure?')) {
+                        clearProgress();
+                        location.reload();
+                    }
+                };
+                summaryScreen.appendChild(clearBtn);
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        function backToQuestions() {
+            document.getElementById('summaryScreen').classList.remove('active');
+            document.getElementById('examInfo').classList.remove('hidden');
+            document.getElementById('examContent').classList.remove('hidden');
+            showQuestion(currentQuestion);
+        }
+    </script>
+</body>
+</html>
